@@ -16,6 +16,7 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative,LocationGlobal
 import math
 import getch #偵測鍵盤按鍵
 import utils
+from pymavlink import mavutil
 
 vehicle = connect('127.0.0.1:14580', wait_ready=True, baud=115200) #與飛機連線
 vehicle1 = connect('127.0.0.1:14571', wait_ready=True, baud=115200) #與飛機連線
@@ -72,18 +73,32 @@ def get_distance_metres(aLocation1, aLocation2): #定義目標位置與目標位
     return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
 
 def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
+    global remainingDistance, targetDistance
+
     currentLocation=vehicle1.location.global_relative_frame #當前位置
     targetLocation=get_location_metres(currentLocation, dNorth, dEast)
     targetDistance=get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
+    
+    # while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
+    remainingDistance=get_distance_metres(vehicle.location.global_frame, targetLocation)
+    #     print ("Distance to target: ", remainingDistance)
+    #     if remainingDistance<=targetDistance*0.1: #Just below target, in case of undershoot.
+    #         print ("Reached target")
+    #         break
+    #     time.sleep(2)
 
-    while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
-        remainingDistance=get_distance_metres(vehicle.location.global_frame, targetLocation)
-        print ("Distance to target: ", remainingDistance)
-        if remainingDistance<=targetDistance*0.1: #Just below target, in case of undershoot.
-            print ("Reached target")
-            break
-        time.sleep(2)
+def aux(ACTUATOR,pwm):
+    # create the MAV_CMD_DO_SET_ROI command
+    msg = vehicle.message_factory.command_long_encode(
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_CMD_DO_SET_SERVO, #command
+        0, #confirmation
+        ACTUATOR,pwm,0,0,0,0,0
+        )
+    # send command to vehicle
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
 
 if vehicle.armed != True:
     arm_and_takeoff(8) #起飛高度
@@ -95,7 +110,6 @@ else:
 print("Set default/target airspeed to 8")
 vehicle.airspeed = 8
 
-#print("Going towards first point for 30 seconds ...")
 while True:
     #print("繼續執行或按q退出")
     lat = vehicle1.location.global_relative_frame.lat #讀取掌機緯度座標
@@ -106,19 +120,22 @@ while True:
     lon = float(lon) #轉換為浮點數
     point1 = LocationGlobalRelative(lat, lon, 12)
     point2 = goto(-40,40)
-    distancetopoint = get_distance_metres(vehicle.location.global_frame, point1)
-    print("Distance:"+"{:.2f}".format(distancetopoint)) #{}內容會讀取後面.format內的值，如{:.3f}表示將distancetopoint填充到槽中時，取小數點後3位
-    time.sleep(1)
-    if distancetopoint >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
+    time.sleep(2)
+    if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
         vehicle.simple_goto(point1)
+        print("Distance to target:"+"{:.2f}".format(remainingDistance)) #{}內容會讀取後面.format內的值，如{:.3f}表示將remainingDistance填充到槽中時，取小數點後3位
     #elif ord(getch.getch()) in [81,113]:
     elif vehicle1.mode == "RTL":
         print("Returning to Launch")
         vehicle.mode = VehicleMode("RTL")
         break
+    elif remainingDistance<=targetDistance*0.1:
+        print ("Reached target")
+        aux(10,1900)
+        continue
     else:
         print("Change Mode Guided")
-        vehicle.mode = VehicleMode("GUIDED")   
+        vehicle.mode = VehicleMode("GUIDED")  
 
 # Close vehicle object before exiting script
 print("Close vehicle object")

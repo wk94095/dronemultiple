@@ -95,11 +95,11 @@ def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
     targetLocation=get_location_metres(currentLocation, dNorth, dEast)
     targetDistance=get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
-
+    global remainingDistance
     while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
         remainingDistance=get_distance_metres(vehicle.location.global_frame, targetLocation)
         print ("Distance to target: ", remainingDistance)
-        if remainingDistance<=targetDistance*0.1: #Just below target, in case of undershoot.
+        if remainingDistance<=targetDistance*0.05: #Just below target, in case of undershoot.
             print ("Reached target")
             break
         time.sleep(2)
@@ -128,7 +128,7 @@ while True:
     distancetopoint = get_distance_metres(vehicle.location.global_frame, point1)
     print("Distance:"+"{:.2f}".format(distancetopoint)) #{}內容會讀取後面.format內的值，如{:.3f}表示將distancetopoint填充到槽中時，取小數點後3位
     time.sleep(1)
-    if distancetopoint >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
+    if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
         vehicle.simple_goto(point1)
     #elif ord(getch.getch()) in [81,113]:
     elif vehicle1.mode == "RTL":

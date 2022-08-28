@@ -16,12 +16,13 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGloba
 import math
 import getch #偵測鍵盤按鍵
 import utils
+from pymavlink import mavutil
 
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
 vehicle1 = connect('127.0.0.1:14570', wait_ready=True, baud=115200) #與飛機連線
 
 print(vehicle.heading)
-print(vehicle.location.local_frame)
+#print(vehicle.location.local_frame)
 
 def arm_and_takeoff(aTargetAltitude): #定義起飛程序
     print("Basic pre-arm checks")
@@ -55,78 +56,70 @@ def arm_and_takeoff(aTargetAltitude): #定義起飛程序
 
         time.sleep(1)
 
-def get_location_metres(original_location, north, east):
+def get_location_metres(original_location, dNorth, dEast):
     earth_radius=6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
-    dLat = north
-    dLon = east
-    return LocationLocal(dLat, dLon, original_location.down)
+    dLat = dNorth/earth_radius
+    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
+
+    #New position in decimal degrees
+    newlat = original_location.lat + (dLat * 180/math.pi)
+    newlon = original_location.lon + (dLon * 180/math.pi)
+    return LocationGlobal(newlat, newlon,original_location.alt)
 
 def get_distance_metres(aLocation1, aLocation2): #定義目標位置與目標位置計算出距離
-    dlat = aLocation2.north - aLocation1.north
-    dlong = aLocation2.east - aLocation1.east
-    return math.sqrt((dlat*dlat) + (dlong*dlong))
+    dlat = aLocation2.lat - aLocation1.lat
+    dlong = aLocation2.lon - aLocation1.lon
+    return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
 
-currentLocation=vehicle1.location.local_frame
-get = get_location_metres(currentLocation, 50, 20)
-targetDistance=get_distance_metres(currentLocation, get)
-print(targetDistance)
+def send_global_ned_velocity(x, y, z):
+    msg = vehicle.message_factory.set_position_target_local_ned_encode(
+        0,0,0,mavutil.mavlink.MAV_FRAME_BODY_OFFSET_NED,
+        0b110111111000,
+        x,y,z,
+        0,0,0,
+        0,0,0,
+        0,0)
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
 
-def true_goto(self, location, airspeed=None, groundspeed=None):
-        
-        if type(location, LocationLocal):
-            frame = mavutil.mavlink.MAV_FRAME_LOCAL_ENU
-            alt = location.down
-        elif isinstance(location, LocationGlobal):
-            # This should be the proper code:
-            # frame = mavutil.mavlink.MAV_FRAME_GLOBAL
-            # However, APM discards information about the relative frame
-            # and treats any alt value as relative. So we compensate here.
-            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-            if not self.home_location:
-                self.commands.download()
-                self.commands.wait_ready()
-            alt = location.alt - self.home_location.alt
-        else:
-            raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
+def aux(ACTUATOR,pwm):
+    """
+    Send MAV_CMD_DO_SET_ROI message to point camera gimbal at a 
+    specified region of interest (LocationGlobal).
+    The vehicle may also turn to face the ROI.
 
-        self._master.mav.mission_item_send(0, 0, 0, frame,
-                                           mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
-                                           0, 0, 0, location.north, location.east,
-                                           alt)
+    For more information see: 
+    http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi
+    """
+    # create the MAV_CMD_DO_SET_ROI command
+    msg = vehicle.message_factory.command_long_encode(
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_CMD_DO_SET_SERVO, #command
+        0, #confirmation
+        ACTUATOR,pwm,0,0,0,0,0
+        )
+    # send command to vehicle
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
 
-        if airspeed is not None:
-            self.airspeed = airspeed
-        if groundspeed is not None:
-            self.groundspeed = groundspeed
+print(msg)
+aux(13,1900)
+print ("Channel values from RC Tx:", vehicle.channels["13"])
+# if vehicle.armed != True:
+#     arm_and_takeoff(8) #起飛高度
+#     print("takeoff")
+# else:
+#     vehicle.mode = VehicleMode("GUIDED")
+#     print("change mode")
 
-def goto(north, east, gotoFunction=true_goto):
-    currentLocation=vehicle1.location.local_frame #當前位置
-    targetLocation=get_location_metres(currentLocation, north, east)
-    targetDistance=get_distance_metres(currentLocation, targetLocation)
-    gotoFunction(targetLocation)
+# print("Set default/target airspeed to 8")
+# vehicle.airspeed = 8
 
-    while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
-        remainingDistance=get_distance_metres(vehicle.location.local_frame, targetLocation)
-        print ("Distance to target: ", remainingDistance)
-        if remainingDistance<=targetDistance*0.1: #Just below target, in case of undershoot.
-            print ("Reached target")
-            break
-        time.sleep(2)
-
-if vehicle.armed != True:
-    arm_and_takeoff(8) #起飛高度
-    print("takeoff")
-else:
-    vehicle.mode = VehicleMode("GUIDED")
-    print("change mode")
-
-print("Set default/target airspeed to 8")
-vehicle.airspeed = 8
-
-while True:
-    goto(-40, -40)
-    time.sleep(2)
+# send_global_ned_velocity(40,0,0)
+# while True:
+#     print(vehicle.location.local_frame)
+#     time.sleep(2)
 
 print("Close vehicle object")
 vehicle.close()
