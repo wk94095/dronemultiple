@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-© Copyright 2015-2016, 3D Robotics.
-simple_goto.py: GUIDED mode "simple goto" example (Copter Only)
-
-Demonstrates how to arm and takeoff in Copter and how to navigate to points using Vehicle.simple_goto.
-
-Full documentation is provided at http://python.dronekit.io/examples/simple_goto.html
-"""
-
 from __future__ import print_function
 import time
 from dronekit import connect, VehicleMode, LocationGlobalRelative,LocationGlobal
@@ -18,7 +9,7 @@ import getch #偵測鍵盤按鍵
 import utils
 
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
-vehicle1 = connect('127.0.0.1:14570', wait_ready=True, baud=115200) #與飛機連線
+vehicle1 = connect('127.0.0.1:14550', wait_ready=True, baud=115200) #與飛機連線
 
 def arm_and_takeoff(aTargetAltitude): #定義起飛程序
     """
@@ -57,17 +48,6 @@ def arm_and_takeoff(aTargetAltitude): #定義起飛程序
         time.sleep(1)
 
 def get_location_metres(original_location, dNorth, dEast):
-    """
-    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-    specified `original_location`. The returned Location has the same `alt` value
-    as `original_location`.
-
-    The function is useful when you want to move the vehicle around specifying locations relative to 
-    the current vehicle position.
-    The algorithm is relatively accurate over small distances (10m within 1km) except close to the poles.
-    For more information see:
-    http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
-    """
     earth_radius=6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
     dLat = dNorth/earth_radius
@@ -90,6 +70,19 @@ def get_distance_metres(aLocation1, aLocation2): #定義目標位置與目標位
     dlong = aLocation2.lon - aLocation1.lon
     return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
 
+def send_global_ned_velocity(x, y, z):
+    msg = vehicle1.message_factory.set_position_target_local_ned_encode(
+        0,0,0,mavutil.mavlink.MAV_FRAME_BODY_OFFSET_NED,
+        0b110111111000,
+        x,y,z,
+        0,0,0,
+        0,0,0,
+        0,0
+        )
+    vehicle.send_mavlink(msg)
+    print(msg)
+    vehicle.flush()
+
 def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
     currentLocation=vehicle1.location.global_relative_frame #當前位置
     targetLocation=get_location_metres(currentLocation, dNorth, dEast)
@@ -99,7 +92,7 @@ def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
     while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
         remainingDistance=get_distance_metres(vehicle.location.global_frame, targetLocation)
         print ("Distance to target: ", remainingDistance)
-        if remainingDistance<=targetDistance*0.05: #Just below target, in case of undershoot.
+        if remainingDistance<=targetDistance*0.1: #Just below target, in case of undershoot.
             print ("Reached target")
             break
         time.sleep(2)
@@ -124,7 +117,7 @@ while True:
     lat = float(lat) #轉換為浮點數
     lon = float(lon) #轉換為浮點數
     point1 = LocationGlobalRelative(lat, lon, 12)
-    point2 = goto(-40,-40)
+    point2 = goto(-10,-10)
     distancetopoint = get_distance_metres(vehicle.location.global_frame, point1)
     print("Distance:"+"{:.2f}".format(distancetopoint)) #{}內容會讀取後面.format內的值，如{:.3f}表示將distancetopoint填充到槽中時，取小數點後3位
     time.sleep(1)

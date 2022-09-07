@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-© Copyright 2015-2016, 3D Robotics.
-simple_goto.py: GUIDED mode "simple goto" example (Copter Only)
-
-Demonstrates how to arm and takeoff in Copter and how to navigate to points using Vehicle.simple_goto.
-
-Full documentation is provided at http://python.dronekit.io/examples/simple_goto.html
-"""
-
 from __future__ import print_function
 import time
 from dronekit import connect, VehicleMode, LocationGlobalRelative,LocationGlobal
@@ -19,7 +10,7 @@ import utils
 from pymavlink import mavutil
 
 vehicle = connect('127.0.0.1:14580', wait_ready=True, baud=115200) #與飛機連線
-vehicle1 = connect('127.0.0.1:14571', wait_ready=True, baud=115200) #與飛機連線
+vehicle1 = connect('127.0.0.1:14551', wait_ready=True, baud=115200) #與飛機連線
 
 def arm_and_takeoff(aTargetAltitude): #定義起飛程序
 
@@ -101,7 +92,7 @@ def aux(ACTUATOR,pwm):
     vehicle.flush()
 
 if vehicle.armed != True:
-    arm_and_takeoff(8) #起飛高度
+    arm_and_takeoff(20) #起飛高度
     print("takeoff")
 else:
     vehicle.mode = VehicleMode("GUIDED")
@@ -111,19 +102,21 @@ print("Set default/target airspeed to 8")
 vehicle.airspeed = 8
 
 while True:
-    #print("繼續執行或按q退出")
+    
     lat = vehicle1.location.global_relative_frame.lat #讀取掌機緯度座標
-    #print(lat)
     lon = vehicle1.location.global_relative_frame.lon #讀取掌機經度座標
-    #print(lon)
     lat = float(lat) #轉換為浮點數
     lon = float(lon) #轉換為浮點數
-    point1 = LocationGlobalRelative(lat, lon, 12)
-    point2 = goto(-40,40)
+    point1 = LocationGlobalRelative(lat, lon, 40)
+    point2 = goto(-10,10)
     time.sleep(2)
     if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
         vehicle.simple_goto(point1)
         print("Distance to target:"+"{:.2f}".format(remainingDistance)) #{}內容會讀取後面.format內的值，如{:.3f}表示將remainingDistance填充到槽中時，取小數點後3位
+        if vehicle1.mode == "RTL":
+            print("Returning to Launch")
+            vehicle.mode = VehicleMode("RTL")
+            break
     #elif ord(getch.getch()) in [81,113]:
     elif vehicle1.mode == "RTL":
         print("Returning to Launch")

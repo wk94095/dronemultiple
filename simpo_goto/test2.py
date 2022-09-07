@@ -298,7 +298,7 @@ def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
         print("Distance to target: ", remainingDistance)
         if remainingDistance<=targetDistance*0.01: #Just below target, in case of undershoot.
             print("Reached target")
-            break;
+            break
         time.sleep(2)
 
 
@@ -423,23 +423,23 @@ The code also sets the speed (MAV_CMD_DO_CHANGE_SPEED). In AC3.2.1 Copter will a
 near the centre of its journey and then decelerate as it reaches the target. 
 In AC3.3 the speed changes immediately.
 """	
-print("TRIANGLE path using standard SET_POSITION_TARGET_GLOBAL_INT message and with varying speed.")
-print("Position South 100 West 130")
+# print("TRIANGLE path using standard SET_POSITION_TARGET_GLOBAL_INT message and with varying speed.")
+# print("Position South 100 West 130")
 
-print("Set groundspeed to 5m/s.")
-vehicle.groundspeed = 5
-goto(-100, -130, goto_position_target_global_int)
+# print("Set groundspeed to 5m/s.")
+# vehicle.groundspeed = 5
+# goto(-100, -130, goto_position_target_global_int)
 
-print("Set groundspeed to 15m/s (max).")
-vehicle.groundspeed = 15
-print("Position South 0 East 200")
-goto(0, 260, goto_position_target_global_int)
+# print("Set groundspeed to 15m/s (max).")
+# vehicle.groundspeed = 15
+# print("Position South 0 East 200")
+# goto(0, 260, goto_position_target_global_int)
 
-print("Set airspeed to 10m/s (max).")
-vehicle.airspeed = 10
+# print("Set airspeed to 10m/s (max).")
+# vehicle.airspeed = 10
 
-print("Position North 100 West 130")
-goto(100, -130, goto_position_target_global_int)
+# print("Position North 100 West 130")
+# goto(100, -130, goto_position_target_global_int)
 
 
 

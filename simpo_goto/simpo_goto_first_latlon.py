@@ -18,7 +18,7 @@ import getch #偵測鍵盤按鍵
 import utils
 
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
-vehicle1 = connect('127.0.0.1:14570', wait_ready=True, baud=115200) #與飛機連線
+vehicle1 = connect('127.0.0.1:14550', wait_ready=True, baud=115200) #與飛機連線
 
 def arm_and_takeoff(aTargetAltitude): #定義起飛程序
     """
@@ -101,7 +101,7 @@ print("Set default/target airspeed to 8")
 vehicle.airspeed = 8
 
 #print("Going towards first point for 30 seconds ...")
-while True:
+while True :
     #print("繼續執行或按q退出")
     lat = vehicle1.location.global_relative_frame.lat #讀取掌機緯度座標
     #print(lat)
@@ -109,7 +109,7 @@ while True:
     #print(lon)
     lat = float(lat) #轉換為浮點數
     lon = float(lon) #轉換為浮點數
-    point1 = LocationGlobalRelative(lat, lon, 12)
+    point1 = LocationGlobalRelative(lat, lon, 30)
     distancetopoint = get_distance_metres(vehicle.location.global_frame, point1)
     print("{:.2f}".format(distancetopoint)) #{}內容會讀取後面.format內的值，如{:.3f}表示將distancetopoint填充到槽中時，取小數點後3位
     time.sleep(1)
