@@ -12,10 +12,10 @@ from pymavlink import mavutil
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
 vehicle1 = connect('127.0.0.1:14550', wait_ready=True, baud=115200) #與飛機連線
 
-print(vehicle.location.global_relative_frame)
-print(vehicle.location.local_frame)
+# print(vehicle.location.global_relative_frame)
+# print(vehicle.location.local_frame)
 
-print(vehicle.heading)
+# print(vehicle.heading)
 #print(vehicle.location.local_frame)
 
 def arm_and_takeoff(aTargetAltitude): #定義起飛程序
@@ -94,7 +94,6 @@ def send_global_ned_velocity(x, y, z):
         0,0
         )
     vehicle.send_mavlink(msg)
-    print(msg)
     vehicle.flush()
 
 def goto_position_target_local_ned(north, east, down):
@@ -146,20 +145,6 @@ def message1(test1):
     print(msg)
     vehicle.flush()
 
-if vehicle.armed != True:
-    arm_and_takeoff(8) #起飛高度
-    print("takeoff")
-else:
-    vehicle.mode = VehicleMode("GUIDED")
-    print("change mode")
-
-print("Set default/target airspeed to 8")
-vehicle.airspeed = 8
-
-#goto_position_target_local_ned(50,0,0)
-send_global_ned_velocity(-20,0,0)
-#condition_yaw(90,1)
-
-print("Close vehicle object")
+send_global_ned_velocity(10,10,0)
 vehicle.close()
 vehicle1.close()

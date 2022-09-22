@@ -6,6 +6,7 @@ import time
 from dronekit import connect, VehicleMode, LocationGlobalRelative,LocationGlobal
 import math
 from pymavlink import mavutil
+import getch
 
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
 first_vehicle = connect('127.0.0.1:14550', wait_ready=True, baud=115200) #與飛機連線
@@ -106,40 +107,45 @@ else:
 # vehicle.airspeed = 8
 
 while True:
+    if ord(getch.getch()) in [81,113]:
+        lat = first_vehicle.location.global_relative_frame.lat #讀取掌機緯度座標
+        lon = first_vehicle.location.global_relative_frame.lon #讀取掌機經度座標
+        lat = float(lat) #轉換為浮點數
+        lon = float(lon) #轉換為浮點數
+        point1 = LocationGlobalRelative(lat, lon, 40)
+        point2 = goto(-10,0) #往南飛10公尺
+        
+        while True:
+            time.sleep(2)
+            if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
+                vehicle.simple_goto(point1)
+                print("Distance to target:"+"{:.2f}".format(remainingDistance)) #{}內容會讀取後面.format內的值，如{:.3f}表示將remainingDistance填充到槽中時，取小數點後3位
+                if first_vehicle.mode == "RTL":
+                    print("Returning to Launch")
+                    vehicle.mode = VehicleMode("RTL")
+                    break
+            #elif ord(getch.getch()) in [81,113]:
+            elif first_vehicle.mode == "RTL":
+                print("Returning to Launch")
+                vehicle.mode = VehicleMode("RTL")
+                break
+            elif remainingDistance<=targetDistance*0.1:
+                print ("Reached target")
+                for _ in range(1):
+                    relay(0,1)
+                    print("OPEN")
+                    time.sleep(3)
+                    aux(12,900)
+                    relay(0,0)
+                    print("CLOSE")
+                    time.sleep(1)
+                continue
+            else:
+                print("Change Mode Guided")
+                vehicle.mode = VehicleMode("GUIDED")
+                continue
     
-    lat = first_vehicle.location.global_relative_frame.lat #讀取掌機緯度座標
-    lon = first_vehicle.location.global_relative_frame.lon #讀取掌機經度座標
-    lat = float(lat) #轉換為浮點數
-    lon = float(lon) #轉換為浮點數
-    point1 = LocationGlobalRelative(lat, lon, 40)
-    point2 = goto(-10,0) #往南飛10公尺
-    time.sleep(2)
-    if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
-        vehicle.simple_goto(point1)
-        print("Distance to target:"+"{:.2f}".format(remainingDistance)) #{}內容會讀取後面.format內的值，如{:.3f}表示將remainingDistance填充到槽中時，取小數點後3位
-        if first_vehicle.mode == "RTL":
-            print("Returning to Launch")
-            vehicle.mode = VehicleMode("RTL")
-            break
-    #elif ord(getch.getch()) in [81,113]:
-    elif first_vehicle.mode == "RTL":
-        print("Returning to Launch")
-        vehicle.mode = VehicleMode("RTL")
-        break
-    elif remainingDistance<=targetDistance*0.1:
-        print ("Reached target")
-        for _ in range(1):
-            relay(0,1)
-            print("OPEN")
-            time.sleep(3)
-            aux(12,900)
-            relay(0,0)
-            print("CLOSE")
-            time.sleep(1)
-        continue
-    else:
-        print("Change Mode Guided")
-        vehicle.mode = VehicleMode("GUIDED")  
+      
 
 # Close vehicle object before exiting script
 print("Close vehicle object")
