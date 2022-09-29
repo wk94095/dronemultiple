@@ -9,8 +9,8 @@ import getch #偵測鍵盤按鍵
 import utils
 from pymavlink import mavutil
 
-vehicle = connect('127.0.0.1:14580', wait_ready=True, baud=115200) #與飛機連線
-vehicle1 = connect('127.0.0.1:14551', wait_ready=True, baud=115200) #與飛機連線
+vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
+vehicle1 = connect('127.0.0.1:14550', wait_ready=True, baud=115200) #與飛機連線
 
 def arm_and_takeoff(aTargetAltitude): #定義起飛程序
 
@@ -102,16 +102,16 @@ print("Set default/target airspeed to 8")
 vehicle.airspeed = 8
 
 while True:
-    
+
     lat = vehicle1.location.global_relative_frame.lat #讀取掌機緯度座標
     lon = vehicle1.location.global_relative_frame.lon #讀取掌機經度座標
     lat = float(lat) #轉換為浮點數
     lon = float(lon) #轉換為浮點數
     point1 = LocationGlobalRelative(lat, lon, 40)
-    point2 = goto(-10,10)
+    point2 = goto(20,0)
     time.sleep(2)
     if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
-        vehicle.simple_goto(point1)
+        #point2
         print("Distance to target:"+"{:.2f}".format(remainingDistance)) #{}內容會讀取後面.format內的值，如{:.3f}表示將remainingDistance填充到槽中時，取小數點後3位
         if vehicle1.mode == "RTL":
             print("Returning to Launch")
