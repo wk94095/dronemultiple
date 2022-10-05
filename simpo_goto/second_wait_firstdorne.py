@@ -46,39 +46,39 @@ else:
 # vehicle.airspeed = 8
 
 goto(-50,0)
-# while True:
-#     global remainingDistance, targetDistance
-#     lat = first_vehicle.location.global_relative_frame.lat #讀取掌機緯度座標
-#     lon = first_vehicle.location.global_relative_frame.lon #讀取掌機經度座標
-#     point1 = LocationGlobalRelative(lat, lon, 20)
-#     point2 = goto(-10,0) #往南飛10公尺
-#     time.sleep(2)
-#     if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
-#         #vehicle.simple_goto(point1)
-#         print("Distance to target:"+"{:.2f}".format(remainingDistance)) #{}內容會讀取後面.format內的值，如{:.3f}表示將remainingDistance填充到槽中時，取小數點後3位
-#         if first_vehicle.mode == "RTL":
-#             print("Returning to Launch")
-#             vehicle.mode = VehicleMode("RTL")
-#             break
-#     #elif ord(getch.getch()) in [81,113]:
-#     elif first_vehicle.mode == "RTL":
-#         print("Returning to Launch")
-#         vehicle.mode = VehicleMode("RTL")
-#         break
-#     elif remainingDistance<=targetDistance*0.1:
-#         print ("Reached target")
-#         for _ in range(1):
-#             utils.relay(vehicle,0,1)
-#             print("OPEN")
-#             time.sleep(3)
-#             utils.aux(vehicle,12,900)
-#             utils.relay(vehicle,0,0)
-#             print("CLOSE")
-#             time.sleep(1)
-#         continue
-#     else:
-#         print("Change Mode Guided")
-#         vehicle.mode = VehicleMode("GUIDED")  
+while True:
+    global remainingDistance, targetDistance
+    lat = first_vehicle.location.global_relative_frame.lat #讀取掌機緯度座標
+    lon = first_vehicle.location.global_relative_frame.lon #讀取掌機經度座標
+    point1 = LocationGlobalRelative(lat, lon, 20)
+    point2 = goto(-10,0) #往南飛10公尺
+    time.sleep(2)
+    if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
+        #vehicle.simple_goto(point1)
+        print("Distance to target:"+"{:.2f}".format(remainingDistance)) #{}內容會讀取後面.format內的值，如{:.3f}表示將remainingDistance填充到槽中時，取小數點後3位
+        if first_vehicle.mode == "RTL":
+            print("Returning to Launch")
+            vehicle.mode = VehicleMode("RTL")
+            break
+    #elif ord(getch.getch()) in [81,113]:
+    elif first_vehicle.mode == "RTL":
+        print("Returning to Launch")
+        vehicle.mode = VehicleMode("RTL")
+        break
+    elif remainingDistance<=targetDistance*0.1:
+        print ("Reached target")
+        for _ in range(1):
+            utils.relay(vehicle,0,1)
+            print("OPEN")
+            time.sleep(3)
+            utils.aux(vehicle,12,900)
+            utils.relay(vehicle,0,0)
+            print("CLOSE")
+            time.sleep(1)
+        continue
+    else:
+        print("Change Mode Guided")
+        vehicle.mode = VehicleMode("GUIDED")  
 
 # Close vehicle object before exiting script
 print("Close vehicle object")

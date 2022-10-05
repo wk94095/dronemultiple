@@ -34,7 +34,7 @@ print("new",newlat,newlon)
 distancelat = newlat - lat
 distancelon = newlon - lon
 get_distance_metres = math.sqrt((distancelat**2)+(distancelon**2))* 1.113195e5
-print(get_distance_metres)
+print("座標離目標物距離:",get_distance_metres)
 
 def get_location_metres(original_location, dNorth, dEast):
     
