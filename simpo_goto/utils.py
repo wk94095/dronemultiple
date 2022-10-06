@@ -42,19 +42,19 @@ def arm_and_takeoff(first_vehicle,vehicle,aTargetAltitude): #定義起飛程序
 
         time.sleep(1)
 
-def get_location_metres(original_location, dNorth, dEast):
+def get_location_metres(original_location, dNorth, dEast, dAlt):
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
     dLat = dNorth/earth_radius
     dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
-
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
+    newalt = dAlt
     if type(original_location) is LocationGlobal:
-        targetlocation=LocationGlobal(newlat, newlon,original_location.alt)
+        targetlocation=LocationGlobal(newlat, newlon, newalt)
     elif type(original_location) is LocationGlobalRelative:
-        targetlocation=LocationGlobalRelative(newlat, newlon,original_location.alt)
+        targetlocation=LocationGlobalRelative(newlat, newlon, newalt)
     else:
         raise Exception("Invalid Location object passed")
         

@@ -9,4 +9,5 @@ import time
 
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200)
 
+
 vehicle.close()

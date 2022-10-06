@@ -7,9 +7,10 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative,LocationGlobal
 import math
 from pymavlink import mavutil
 import utils
+import getch
 
-vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
-first_vehicle = connect('127.0.0.1:14551', wait_ready=True, baud=115200) #與飛機連線
+vehicle = connect('127.0.0.1:14570', wait_ready=True, baud=115200) #與飛機連線
+first_vehicle = connect('127.0.0.1:14550', wait_ready=True, baud=115200) #與飛機連線
 
 def send_ned_velocity(velocity_x, velocity_y, velocity_z):
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
@@ -50,7 +51,7 @@ while True:
     lat = first_vehicle.location.global_relative_frame.lat #讀取掌機緯度座標
     lon = first_vehicle.location.global_relative_frame.lon #讀取掌機經度座標
     point1 = LocationGlobalRelative(lat, lon, 20)
-    point2 = goto(-10,0,5) #往南飛10公尺
+    point2 = goto(-20,0,40) #往南飛20公尺
     time.sleep(2)
     if remainingDistance >=1: #離目標距離大於1時會繼續往目標前進，直到小於1時跳出
         #vehicle.simple_goto(point1)

@@ -1,8 +1,10 @@
 import math
+from dronekit import LocationGlobalRelative
 
 def target(vehicle,gimbalangle):
     lat = vehicle.location.global_relative_frame.lat #無人機緯度座標
     lon = vehicle.location.global_relative_frame.lon #無人機經度座標
+    alt = vehicle.location.global_relative_frame.alt
     print(vehicle.attitude.pitch) #顯示無人機pitch角度
     gimbal_angle = math.radians(gimbalangle) #雲台角度
     droneheading = math.radians(90-vehicle.heading) #飛機頭向
@@ -24,3 +26,5 @@ def target(vehicle,gimbalangle):
     distancelon = newlon - lon
     get_distance_metres = math.sqrt((distancelat**2)+(distancelon**2))* 1.113195e5
     print("座標離目標物距離:",get_distance_metres)
+
+    return LocationGlobalRelative(newlat, newlon, alt)

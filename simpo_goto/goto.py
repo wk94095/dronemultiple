@@ -6,6 +6,7 @@ from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelativ
 from pymavlink import mavutil # Needed for command message definitions
 import time
 import math
+import getch
 
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
 
@@ -41,19 +42,19 @@ def arm_and_takeoff(aTargetAltitude):
 #Arm and take of to altitude of 5 meters
 arm_and_takeoff(5)
 
-def get_location_metres(original_location, dNorth, dEast):
+def get_location_metres(original_location, dNorth, dEast, dAlt):
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
     dLat = dNorth/earth_radius
     dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
-
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
+    newalt = dAlt
     if type(original_location) is LocationGlobal:
-        targetlocation=LocationGlobal(newlat, newlon,original_location.alt)
+        targetlocation=LocationGlobal(newlat, newlon,newalt)
     elif type(original_location) is LocationGlobalRelative:
-        targetlocation=LocationGlobalRelative(newlat, newlon,original_location.alt)
+        targetlocation=LocationGlobalRelative(newlat, newlon,newalt)
     else:
         raise Exception("Invalid Location object passed")
         
@@ -118,9 +119,9 @@ def goto_position_target_local_ned(north, east, down):
     vehicle.send_mavlink(msg)
 
 
-def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
+def goto(dNorth, dEast, dAlt, gotoFunction=vehicle.simple_goto):
     currentLocation = vehicle.location.global_relative_frame
-    targetLocation = get_location_metres(currentLocation, dNorth, dEast)
+    targetLocation = get_location_metres(currentLocation, dNorth, dEast, dAlt)
     targetDistance = get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
     
@@ -141,13 +142,18 @@ def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
 print("TRIANGLE path using standard Vehicle.simple_goto()")
 
 print("Set groundspeed to 5m/s.")
-vehicle.groundspeed=5
+vehicle.airspeed=5
+while True:
+    if ord(getch.getch()) in [49]:
+        print("Position North 80 West 50")
+        goto(10, -10, 30)
+    elif ord(getch.getch()) in [50]:
+        print("Position North 0 East 100")
+        goto(0, 10, 20)
+    elif ord(getch.getch()) in [51]:
+        print("Position North -80 West 50")
+        goto(-10, -10, 10)
+    elif ord(getch.getch()) in [27]:
+        break
 
-print("Position North 80 West 50")
-goto(10, -10)
-
-print("Position North 0 East 100")
-goto(0, 10)
-
-print("Position North -80 West 50")
-goto(-10, -10)
+vehicle.close()
