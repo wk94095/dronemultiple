@@ -10,10 +10,9 @@ from utils.drone import arm_and_takeoff
 start = time.time()
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
 
-
 #Arm and take of to altitude of 5 meters
 arm_and_takeoff(vehicle, 5)
-a = target(vehicle,10)
+a = target(vehicle,30)
 vehicle.simple_goto(a)
 print(vehicle.location.global_relative_frame)
 print(vehicle.heading)

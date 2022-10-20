@@ -66,8 +66,6 @@ def get_distance_metres(aLocation1, aLocation2): #定義目標位置與目標位
     dlong = aLocation2.lon - aLocation1.lon
     return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
 
-
-
 def aux(vehicle,ACTUATOR,pwm): #設定aux通道
     msg = vehicle.message_factory.command_long_encode(
         0, 0,    # target system, target component
