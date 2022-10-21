@@ -4,33 +4,36 @@
 from __future__ import print_function
 import time
 import math
+import json
 from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal, Attitude
 from utils.gimbalmath import target
 from utils.drone import arm_and_takeoff
+import paho.mqtt.client as mqtt
 start = time.time()
 vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
 
-#Arm and take of to altitude of 5 meters
+# 連線設定
+# 初始化地端程式
+client = mqtt.Client()
+
+# 設定登入帳號密碼
+client.username_pw_set("bighead","nfuaesil")
+
+# 設定連線資訊(IP, Port, 連線時間)
+client.connect("192.168.0.132", 1883, 60)
+
 arm_and_takeoff(vehicle, 5)
+
 a = target(vehicle,30)
+print(a.lat)
+payload = {'Latitude' : a.lat, 'Longtitude' : a.lon}
+print(json.dumps(payload))
+client.publish("target/position", json.dumps(payload))
 vehicle.simple_goto(a)
 print(vehicle.location.global_relative_frame)
 print(vehicle.heading)
 
 
-
-# def xy(lat,lon,B0,L0):
-#     B = lat*math.pi/180
-#     L = lon*math.pi/180
-#     a=6378137.0
-#     b=6356752.3142
-#     e=math.sqrt(1-(b/a)**2)
-#     ee=math.sqrt((a/b)**2-1)
-#     K=(((a**2*math.cos(B0))/b)/math.sqrt(1+(ee)**2*(math.cos(B0))**2))
-#     X=K*(L-L0)
-#     Y=K*math.log(math.tan(math.pi/4+B/2)*((1-e*math.sin(B))/(1+e*math.sin(B)))**(e/2))
-#     return X,Y
-# print(xy(23.7025595, 120.4230539, 0, 0))
 
 vehicle.close()
 end = time.time()
