@@ -8,7 +8,7 @@ def target(vehicle,gimbalangle):
     print(vehicle.attitude.pitch) #顯示無人機pitch角度
     gimbal_angle = math.radians(gimbalangle) #雲台角度
     droneheading = math.radians(90-vehicle.heading) #飛機頭向
-    height = 20 #飛機高度
+    height = alt #飛機高度
     distance = height*math.tan(gimbal_angle)
     print("離目標物距離:",distance)
     earth_radius=6378137.0 #地球半徑

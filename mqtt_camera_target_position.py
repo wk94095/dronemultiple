@@ -10,7 +10,7 @@ from utils.gimbalmath import target
 from utils.drone import arm_and_takeoff
 import paho.mqtt.client as mqtt
 start = time.time()
-vehicle = connect('127.0.0.1:14560', wait_ready=True, baud=115200) #與飛機連線
+vehicle = connect('127.0.0.1:14570', wait_ready=True, baud=115200) #與飛機連線
 
 # 連線設定
 # 初始化地端程式
@@ -22,16 +22,18 @@ client.username_pw_set("bighead","nfuaesil")
 # 設定連線資訊(IP, Port, 連線時間)
 client.connect("192.168.0.132", 1883, 60)
 
-arm_and_takeoff(vehicle, 5)
+#arm_and_takeoff(vehicle, 5)
 
-a = target(vehicle,30)
+#for _ in range(3):
+a = target(vehicle,20)
 print(a.lat)
 payload = {'Latitude' : a.lat, 'Longtitude' : a.lon}
 print(json.dumps(payload))
 client.publish("target/position", json.dumps(payload))
-vehicle.simple_goto(a)
-print(vehicle.location.global_relative_frame)
-print(vehicle.heading)
+    #time.sleep(8)
+#vehicle.simple_goto(a)
+# print(vehicle.location.global_relative_frame)
+# print(vehicle.heading)
 
 
 

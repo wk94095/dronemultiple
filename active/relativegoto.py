@@ -94,7 +94,7 @@ else:
 home = vehicle.location.global_relative_frame
 while True:
     start = time.time()
-    point = target(10, -180,10)
+    point = target(10, -180,first_vehicle.location.global_relative_frame.alt+5)
     vehicle.simple_goto(point,6)
     time.sleep(0.5)
     distancetopoint = utils.get_distance_metres(vehicle.location.global_frame, point)
